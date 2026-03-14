@@ -400,28 +400,28 @@ Companies can use this system to:
     </td>
     <td align="center" width="220">
       <b>Yashweer Potelu</b><br/><br/>
-      <a href="https://www.linkedin.com/in/bogamitra/">
+      <a href="https://www.linkedin.com/in/sai-yashweer-potelu-1233272a3/">
         <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin" />
       </a>
-      <a href="https://x.com/techtraboga">
+      <a href="https://github.com/yashweer23">
         <img src="https://img.shields.io/badge/X-Follow-black?logo=x" />
       </a>
     </td>
     <td align="center" width="220">
       <b>Datla Akshith Varma</b><br/><br/>
-      <a href="https://www.linkedin.com/in/bogamitra/">
+      <a href="https://www.linkedin.com/in/akshith-varma-datla-6a4251302/">
         <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin" />
       </a>
-      <a href="https://x.com/techtraboga">
+      <a href="https://github.com/Akshith-v">
         <img src="https://img.shields.io/badge/X-Follow-black?logo=x" />
       </a>
     </td>
     <td align="center" width="220">
       <b>Pranav Surya</b><br/><br/>
-      <a href="https://www.linkedin.com/in/bogamitra/">
+      <a href="https://www.linkedin.com/in/pranav-surya-0b5b13301/">
         <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin" />
       </a>
-      <a href="https://x.com/techtraboga">
+      <a href="https://github.com/pranavsurya28">
         <img src="https://img.shields.io/badge/X-Follow-black?logo=x" />
       </a>
     </td>
