@@ -1,4 +1,4 @@
-<h1 align="center">📊 Customer Churn Predictor</h1>
+<h1 align="center">📊 Customer Churn Predictor 👨🏼‍💼</h1>
 <h3 align="center">Machine Learning Risk Intelligence + Executive Business Dashboard</h3>
 
 <p align="center">
