@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY churn /app/churn
+COPY models /app/models
+COPY data /app/data
+COPY reports /app/reports
+COPY pyproject.toml /app/pyproject.toml
+
+EXPOSE 8000
+CMD ["python", "-m", "churn.api"]
