@@ -252,29 +252,53 @@ The Streamlit app includes:
 - Business tab (ROI curve + threshold strategy)
 - Logs & batch scoring tab (CSV upload + /predict_batch)
 
-<p align="center">
-  <img src="assets/streamlit_predict.png" width="100%" alt="Streamlit - Predict" />
-</p>
+<details>
+  <summary><b>▶️ Predict Page</b></summary>
+  <br/>
+  <p align="center">
+    <img src="assets/streamlit_predict.png" width="100%" alt="Streamlit - Predict" />
+  </p>
+</details>
 
-<p align="center">
-  <img src="assets/streamlit_analytics_1.png" width="100%" alt="Streamlit - Analytics Dashboard" />
-</p>
+<details>
+  <summary><b>▶️ Analytics Dashboard (Part 1)</b></summary>
+  <br/>
+  <p align="center">
+    <img src="assets/streamlit_analytics_1.png" width="100%" alt="Streamlit - Analytics Dashboard Part 1" />
+  </p>
+</details>
 
-<p align="center">
-  <img src="assets/streamlit_analytics_2.png" width="100%" alt="Streamlit - Analytics Dashboard" />
-</p>
+<details>
+  <summary><b>▶️ Analytics Dashboard (Part 2)</b></summary>
+  <br/>
+  <p align="center">
+    <img src="assets/streamlit_analytics_2.png" width="100%" alt="Streamlit - Analytics Dashboard Part 2" />
+  </p>
+</details>
 
-<p align="center">
-  <img src="assets/streamlit_explainability.png" width="100%" alt="Streamlit - Explainability" />
-</p>
+<details>
+  <summary><b>▶️ Explainability Page</b></summary>
+  <br/>
+  <p align="center">
+    <img src="assets/streamlit_explainability.png" width="100%" alt="Streamlit - Explainability" />
+  </p>
+</details>
 
-<p align="center">
-  <img src="assets/streamlit_business.png" width="100%" alt="Streamlit - Business" />
-</p>
+<details>
+  <summary><b>▶️ Business Page</b></summary>
+  <br/>
+  <p align="center">
+    <img src="assets/streamlit_business.png" width="100%" alt="Streamlit - Business" />
+  </p>
+</details>
 
-<p align="center">
-  <img src="assets/streamlit_logs.png" width="100%" alt="Streamlit - Logs & Batch" />
-</p>
+<details>
+  <summary><b>▶️ Logs & Batch Page</b></summary>
+  <br/>
+  <p align="center">
+    <img src="assets/streamlit_logs.png" width="100%" alt="Streamlit - Logs & Batch" />
+  </p>
+</details>
 
 ---
 
