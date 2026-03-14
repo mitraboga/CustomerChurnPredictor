@@ -257,7 +257,11 @@ The Streamlit app includes:
 </p>
 
 <p align="center">
-  <img src="assets/streamlit_analytics.png" width="100%" alt="Streamlit - Analytics Dashboard" />
+  <img src="assets/streamlit_analytics_1.png" width="100%" alt="Streamlit - Analytics Dashboard" />
+</p>
+
+<p align="center">
+  <img src="assets/streamlit_analytics_2.png" width="100%" alt="Streamlit - Analytics Dashboard" />
 </p>
 
 <p align="center">
