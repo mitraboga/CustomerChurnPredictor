@@ -181,6 +181,12 @@ FastAPI + Streamlit + Monitoring + Tableau Dashboards
 - **Dashboard 2: ML Risk Intelligence (Predictive + Decision Layer)**
 
 ### Dashboard 1 — Churn Overview (Business Analysis)
+
+<p align="center">
+  <!-- Replace with your overview dashboard GIF path -->
+  <img src="assets/tableau_overview.gif" width="100%" alt="Tableau - Churn Overview Dashboard" />
+</p>
+
 Focus: historical churn patterns and segmentation insights.
 
 **KPIs**
@@ -199,6 +205,12 @@ Focus: historical churn patterns and segmentation insights.
 ---
 
 ### Dashboard 2 — ML Risk Intelligence (Predictive)
+
+<p align="center">
+  <!-- Replace with your ML dashboard GIF path -->
+  <img src="assets/tableau_ml.gif" width="100%" alt="Tableau - ML Risk Intelligence Dashboard" />
+</p>
+
 Focus: who will churn next and what to do.
 
 **KPIs**
@@ -239,6 +251,26 @@ The Streamlit app includes:
 - Explainability tab (Permutation + SHAP global/local)
 - Business tab (ROI curve + threshold strategy)
 - Logs & batch scoring tab (CSV upload + /predict_batch)
+
+<p align="center">
+  <img src="assets/streamlit_predict.png" width="100%" alt="Streamlit - Predict" />
+</p>
+
+<p align="center">
+  <img src="assets/streamlit_analytics.png" width="100%" alt="Streamlit - Analytics Dashboard" />
+</p>
+
+<p align="center">
+  <img src="assets/streamlit_explainability.png" width="100%" alt="Streamlit - Explainability" />
+</p>
+
+<p align="center">
+  <img src="assets/streamlit_business.png" width="100%" alt="Streamlit - Business" />
+</p>
+
+<p align="center">
+  <img src="assets/streamlit_logs.png" width="100%" alt="Streamlit - Logs & Batch" />
+</p>
 
 ---
 
@@ -315,21 +347,6 @@ python -m streamlit run app/streamlit_app.py
 
 ---
 
-## 📷 Example Dashboard Views
-
-*(Insert screenshots here)*
-
-### Tableau — Churn Overview
-<img src="assets/dashboard_business.png" width="100%">
-
-### Tableau — ML Risk Intelligence
-<img src="assets/dashboard_ml.png" width="100%">
-
-### Streamlit — Modern SaaS UI
-<img src="assets/streamlit_ui.png" width="100%">
-
----
-
 ## 📈 Potential Business Applications
 
 Companies can use this system to:
@@ -340,14 +357,45 @@ Companies can use this system to:
 
 ---
 
-## 👤 Author
+## 👥 Authors
 
-<p align="center">
-<b>Mitra Boga</b><br>
-<a href="https://www.linkedin.com/in/bogamitra/">
-<img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin" />
-</a>
-<a href="https://x.com/techtraboga">
-<img src="https://img.shields.io/badge/X-Follow-black?logo=x" />
-</a>
-</p>
+<table align="center">
+  <tr>
+    <td align="center" width="220">
+      <b>Mitra Boga</b><br/><br/>
+      <a href="https://www.linkedin.com/in/bogamitra/">
+        <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin" />
+      </a>
+      <a href="https://x.com/techtraboga">
+        <img src="https://img.shields.io/badge/X-Follow-black?logo=x" />
+      </a>
+    </td>
+    <td align="center" width="220">
+      <b>Yashweer Potelu</b><br/><br/>
+      <a href="https://www.linkedin.com/in/bogamitra/">
+        <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin" />
+      </a>
+      <a href="https://x.com/techtraboga">
+        <img src="https://img.shields.io/badge/X-Follow-black?logo=x" />
+      </a>
+    </td>
+    <td align="center" width="220">
+      <b>Datla Akshith Varma</b><br/><br/>
+      <a href="https://www.linkedin.com/in/bogamitra/">
+        <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin" />
+      </a>
+      <a href="https://x.com/techtraboga">
+        <img src="https://img.shields.io/badge/X-Follow-black?logo=x" />
+      </a>
+    </td>
+    <td align="center" width="220">
+      <b>Pranav Surya</b><br/><br/>
+      <a href="https://www.linkedin.com/in/bogamitra/">
+        <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin" />
+      </a>
+      <a href="https://x.com/techtraboga">
+        <img src="https://img.shields.io/badge/X-Follow-black?logo=x" />
+      </a>
+    </td>
+  </tr>
+</table>
