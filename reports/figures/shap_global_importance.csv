@@ -1,0 +1,47 @@
+feature,mean_abs_shap
+num__tenure,1.019295594352505
+num__MonthlyCharges,0.5768581849524579
+num__TotalCharges,0.3892688996056392
+cat__InternetService_Fiber optic,0.35675477091320745
+cat__Contract_Month-to-month,0.32981019266061623
+cat__InternetService_DSL,0.2700874698383
+cat__Contract_Two year,0.2610438143175905
+cat__StreamingMovies_Yes,0.13688917392154368
+cat__StreamingTV_Yes,0.12521480226456005
+cat__PaperlessBilling_No,0.12178131219274477
+cat__PaymentMethod_Electronic check,0.10574785737852872
+cat__MultipleLines_No,0.10542041887692755
+cat__OnlineSecurity_No,0.10259786129625992
+cat__StreamingMovies_No internet service,0.09140283022954457
+cat__OnlineSecurity_No internet service,0.09140283022954457
+cat__TechSupport_No internet service,0.09140283022954457
+cat__StreamingTV_No internet service,0.09140283022954457
+cat__InternetService_No,0.09140283022954457
+cat__DeviceProtection_No internet service,0.09140283022954457
+cat__OnlineBackup_No internet service,0.09140283022954457
+cat__StreamingMovies_No,0.08714529155426766
+cat__TechSupport_No,0.08536766398167074
+cat__StreamingTV_No,0.08384062159947034
+cat__Dependents_Yes,0.08084281424412122
+cat__MultipleLines_Yes,0.06646089447970042
+cat__PaymentMethod_Bank transfer (automatic),0.06105770417428395
+cat__gender_Female,0.05149697721866067
+cat__PaymentMethod_Credit card (automatic),0.049541773898147595
+cat__Partner_No,0.04775213746825806
+cat__OnlineSecurity_Yes,0.0426702245694605
+cat__SeniorCitizen_0,0.039895860553153244
+cat__PaperlessBilling_Yes,0.03897411038892607
+cat__Partner_Yes,0.038509507725170304
+cat__OnlineBackup_No,0.03688699267919697
+cat__PaymentMethod_Mailed check,0.036034081060252104
+cat__DeviceProtection_Yes,0.035522199218167294
+cat__gender_Male,0.03536130525607431
+cat__TechSupport_Yes,0.029970685817255226
+cat__Contract_One year,0.02232983412088253
+cat__MultipleLines_No phone service,0.01218141384130873
+cat__PhoneService_No,0.01218141384130873
+cat__Dependents_No,0.011416716684176214
+cat__OnlineBackup_Yes,0.010262485964839068
+cat__PhoneService_Yes,0.008450130408037925
+cat__DeviceProtection_No,0.008370005119292808
+cat__SeniorCitizen_1,0.002543208673924308
