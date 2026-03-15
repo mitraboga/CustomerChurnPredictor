@@ -1,0 +1,16 @@
+timestamp_utc,tenure,MonthlyCharges,TotalCharges,gender,SeniorCitizen,Partner,Dependents,PhoneService,MultipleLines,InternetService,OnlineSecurity,OnlineBackup,DeviceProtection,TechSupport,StreamingTV,StreamingMovies,Contract,PaperlessBilling,PaymentMethod,churn_probability
+2026-03-08T17:57:48.327620,12.0,70.0,800.0,Male,0,Yes,Yes,Yes,Yes,DSL,Yes,Yes,Yes,Yes,Yes,Yes,Month-to-month,Yes,Electronic check,0.6934481720921075
+2026-03-08T17:58:01.113074,12.0,70.0,800.0,Male,0,Yes,Yes,Yes,Yes,DSL,Yes,Yes,Yes,Yes,Yes,Yes,Month-to-month,Yes,Electronic check,0.6934481720921075
+2026-03-12T06:12:11.572703,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-12T06:24:01.218096,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-12T06:41:11.914950,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-12T06:43:28.235874,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-12T06:47:20.948041,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-12T07:00:55.096451,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-12T07:04:55.545865,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-12T07:05:02.845538,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-12T07:14:23.250542,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-12T08:11:59.431775,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-13T05:52:01.530924,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-14T17:12:03.099837,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
+2026-03-14T17:14:18.353372,12.0,70.0,800.0,Male,0,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,Yes,Month-to-month,Yes,Electronic check,0.9466425051925277
