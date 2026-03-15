@@ -57,55 +57,9 @@ Most churn projects stop at accuracy. This project goes further:
 
 ## 🧱 System Architecture
 
-```
-                ┌──────────────────────────────┐
-                │   Telco Churn Dataset (CSV)  │
-                └───────────────┬──────────────┘
-                                │
-                                ▼
-                  ┌──────────────────────────┐
-                  │  Data Cleaning + Prep     │
-                  │  (Pandas + sklearn pipes) │
-                  └───────────────┬──────────┘
-                                  │
-                                  ▼
-                  ┌──────────────────────────┐
-                  │  Model Training + Eval    │
-                  │  (LogReg vs RF + Metrics) │
-                  └───────────────┬──────────┘
-                                  │
-                                  ▼
-                  ┌──────────────────────────┐
-                  │  Explainability           │
-                  │  (Permutation + SHAP)     │
-                  └───────────────┬──────────┘
-                                  │
-                                  ▼
-                  ┌──────────────────────────┐
-                  │ Business Simulation (ROI) │
-                  │ Threshold → Expected Value│
-                  └───────────────┬──────────┘
-                                  │
-                  ┌───────────────┴───────────────────────────────┐
-                  │                                               │
-                  ▼                                               ▼
-       ┌──────────────────────────┐                 ┌──────────────────────────┐
-       │ FastAPI Inference API     │                 │ Tableau Dashboard Layer   │
-       │ /predict + /predict_batch │                 │ (Executive + ML Risk)     │
-       └───────────────┬──────────┘                 └───────────────┬──────────┘
-                       │                                            │
-                       ▼                                            ▼
-         ┌──────────────────────────┐                ┌──────────────────────────┐
-         │ Streamlit SaaS Dashboard  │                │ Tableau-ready CSV Exports │
-         │ Decisions + Analytics     │                │ cleaned/scored/ROI/drivers│
-         └───────────────┬──────────┘                └──────────────────────────┘
-                         │
-                         ▼
-            ┌──────────────────────────┐
-            │ Monitoring (Evidently)    │
-            │ Drift report from logs    │
-            └──────────────────────────┘
-```
+<p align="center">
+    <img src="assets/architecture.png" width="100%" alt="System Architecture" />
+  </p>
 
 ---
 
