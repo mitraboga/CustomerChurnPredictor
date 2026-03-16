@@ -1,0 +1,17 @@
+{
+  "best_model": "logreg",
+  "ranking_metric": "roc_auc",
+  "results": [
+    {
+      "model": "logreg",
+      "roc_auc": 0.8414063912785139,
+      "pr_auc": 0.6324160254841014
+    },
+    {
+      "model": "rf",
+      "roc_auc": 0.8224237257485338,
+      "pr_auc": 0.6135161197172467
+    }
+  ],
+  "target_col": "Churn"
+}
