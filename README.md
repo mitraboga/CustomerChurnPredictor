@@ -270,6 +270,144 @@ This log is used for monitoring drift.
 
 ---
 
+## ⚡ FastAPI + Local Model (How It Works)
+
+In this project, **FastAPI acts as the bridge between the trained machine learning model and the user interface**.
+
+### 🔗 Local Development Setup (Project Mode)
+
+During development, the system runs in two parts:
+
+1. **FastAPI Backend (Model Server)**
+   - Loads the trained model (`model.joblib`)
+   - Exposes prediction endpoints:
+     - `/predict` → single customer
+     - `/predict_batch` → multiple customers
+   - Handles inference logic and logging
+
+2. **Streamlit Frontend (Dashboard UI)**
+   - Collects user input (customer data)
+   - Sends requests to FastAPI
+   - Displays:
+     - churn probability
+     - decision (intervene or not)
+     - expected business value
+
+👉 Flow:
+
+```
+User Input (Streamlit)
+        ↓
+HTTP Request → FastAPI (/predict)
+        ↓
+Model (joblib) → Prediction
+        ↓
+Response → Streamlit UI
+```
+
+This setup mimics a **real production ML system**, where:
+- UI ≠ Model  
+- Communication happens via APIs  
+
+---
+
+## 🚀 Why FastAPI Is Used
+
+FastAPI is chosen because it is:
+
+- ⚡ **Fast and lightweight** (high-performance inference)  
+- 📦 **Production-ready** (used in real ML systems)  
+- 🔌 **Easy to integrate** with frontends (Streamlit, React, etc.)  
+- 📊 Supports **batch inference** and scalability  
+
+---
+
+## 🌍 Production Deployment (Real-World System)
+
+In a real production environment, this system would be deployed as:
+
+### 🏗️ Production Architecture
+
+- FastAPI → deployed on cloud (AWS / GCP / Azure)  
+- Model → stored in object storage (S3 / GCS)  
+- Load balancer → handles traffic  
+- Database → stores prediction logs  
+- Frontend → separate app (React / dashboard)  
+
+### Example Flow:
+
+```
+User → Web App
+        ↓
+API Gateway / Load Balancer
+        ↓
+FastAPI Service (Docker container)
+        ↓
+Model Inference
+        ↓
+Response + Logging (Database)
+```
+
+### 🔧 Deployment Tools (Industry Level)
+
+- Docker (containerization)  
+- Kubernetes (scaling)  
+- AWS ECS / Lambda / EC2  
+- CI/CD pipelines (GitHub Actions)  
+
+---
+
+## 💡 Why This Project Uses a Simpler Approach
+
+Since this is an **academic + portfolio project**, we use a simplified setup:
+
+- FastAPI runs locally (`http://localhost:8000`)  
+- Streamlit connects directly to it  
+- No cloud infrastructure required  
+- No cost involved  
+
+This allows:
+
+- ✅ Fast development  
+- ✅ Easy debugging  
+- ✅ Zero deployment cost  
+- ✅ Demonstrates full ML system design  
+
+---
+
+## 🧠 Smart Hybrid Design (Cloud + Local Fallback)
+
+The project also supports a **fallback mode**:
+
+- If FastAPI is **offline**, Streamlit:
+  - loads `model.joblib` directly  
+  - performs predictions locally  
+
+This ensures:
+
+- 🚫 No dependency on backend uptime  
+- 🌐 Works on Streamlit Cloud  
+- 💼 Demonstrates **resilient system design**  
+
+---
+
+## 🎯 Why This Matters
+
+This architecture shows that the project is not just:
+
+> ❌ “a machine learning model”
+
+It is:
+
+> ✅ **a complete ML system with deployment, APIs, UI, and monitoring**
+
+---
+
+## 💬 Summary of API framework
+
+> “I deployed my churn model behind a FastAPI service, which the Streamlit dashboard calls in real-time. I also implemented a local fallback so the system works even without a backend—making it both production-ready and deployable for free.”
+
+---
 ## 📈 Monitoring (Evidently Drift Report)
 
 Run:
