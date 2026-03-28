@@ -1,14 +1,18 @@
 r"""
 CustomerChurnPredictor — Streamlit App (Modern SaaS Dashboard)
 
-Run:
-1) Terminal A (API):
+Run locally:
+1) Optional API:
    .\.venv\Scripts\Activate.ps1
    python -m churn.api
 
-2) Terminal B (UI):
+2) UI:
    .\.venv\Scripts\Activate.ps1
    python -m streamlit run app/streamlit_app.py
+
+Deployment behavior:
+- If FastAPI is available, use it
+- If FastAPI is unavailable, fall back to local model.joblib inference
 """
 
 from __future__ import annotations
@@ -22,36 +26,42 @@ import pandas as pd
 import requests
 import streamlit as st
 
-# Altair gives clean SaaS-style charts (Streamlit usually installs it).
 try:
     import altair as alt
 except Exception:  # noqa: BLE001
     alt = None
+
+try:
+    import joblib
+except Exception:  # noqa: BLE001
+    joblib = None
 
 
 # ---------------------------
 # Paths / Artifacts
 # ---------------------------
 
-PATH_BEST_THRESHOLD = Path("reports/metrics/best_threshold.json")
-PATH_MODEL_METRICS = Path("reports/metrics/model_metrics.csv")
+BASE_DIR = Path(__file__).resolve().parents[1]
 
-PATH_PERM_IMPORTANCE_PNG = Path("reports/figures/permutation_importance_top15.png")
-PATH_SHAP_GLOBAL_PNG = Path("reports/figures/shap_global_importance_top15.png")
-PATH_SHAP_LOCAL_PNG = Path("reports/figures/shap_local_waterfall_example.png")
-PATH_BUSINESS_PNG = Path("reports/figures/business_total_value_vs_threshold.png")
-PATH_SHAP_GLOBAL_CSV = Path("reports/figures/shap_global_importance.csv")
-PATH_SHAP_LOCAL_CSV = Path("reports/figures/shap_local_example.csv")
+PATH_MODEL = BASE_DIR / "models" / "model.joblib"
+PATH_BEST_THRESHOLD = BASE_DIR / "reports" / "metrics" / "best_threshold.json"
+PATH_MODEL_METRICS = BASE_DIR / "reports" / "metrics" / "model_metrics.csv"
 
-PATH_LOGS = Path("data/logs/predictions_log.csv")
+PATH_PERM_IMPORTANCE_PNG = BASE_DIR / "reports" / "figures" / "permutation_importance_top15.png"
+PATH_SHAP_GLOBAL_PNG = BASE_DIR / "reports" / "figures" / "shap_global_importance_top15.png"
+PATH_SHAP_LOCAL_PNG = BASE_DIR / "reports" / "figures" / "shap_local_waterfall_example.png"
+PATH_BUSINESS_PNG = BASE_DIR / "reports" / "figures" / "business_total_value_vs_threshold.png"
+PATH_SHAP_GLOBAL_CSV = BASE_DIR / "reports" / "figures" / "shap_global_importance.csv"
+PATH_SHAP_LOCAL_CSV = BASE_DIR / "reports" / "figures" / "shap_local_example.csv"
 
-# Tableau exports (reused for Streamlit analytics)
-PATH_TELCO_CLEANED = Path("data/tableau/telco_cleaned.csv")
-PATH_TELCO_SCORED = Path("data/tableau/telco_scored.csv")
-PATH_ROI_THRESHOLDS = Path("data/tableau/roi_thresholds.csv")
-PATH_FEATURE_IMPORTANCE = Path("data/tableau/feature_importance.csv")
-PATH_THRESHOLD_SCAN = Path("data/tableau/threshold_scan.csv")  # exported by tableau_export.py
-PATH_THRESHOLD_SCAN_FALLBACK = Path("reports/metrics/threshold_scan.csv")  # fallback
+PATH_LOGS = BASE_DIR / "data" / "logs" / "predictions_log.csv"
+
+PATH_TELCO_CLEANED = BASE_DIR / "data" / "tableau" / "telco_cleaned.csv"
+PATH_TELCO_SCORED = BASE_DIR / "data" / "tableau" / "telco_scored.csv"
+PATH_ROI_THRESHOLDS = BASE_DIR / "data" / "tableau" / "roi_thresholds.csv"
+PATH_FEATURE_IMPORTANCE = BASE_DIR / "data" / "tableau" / "feature_importance.csv"
+PATH_THRESHOLD_SCAN = BASE_DIR / "data" / "tableau" / "threshold_scan.csv"
+PATH_THRESHOLD_SCAN_FALLBACK = BASE_DIR / "reports" / "metrics" / "threshold_scan.csv"
 
 
 # ---------------------------
@@ -59,20 +69,12 @@ PATH_THRESHOLD_SCAN_FALLBACK = Path("reports/metrics/threshold_scan.csv")  # fal
 # ---------------------------
 
 def resolve_api_url() -> str:
-    """
-    Resolve API URL without crashing if Streamlit secrets are not configured.
-
-    Priority:
-    1) env var CHURN_API_URL or API_URL
-    2) Streamlit secrets (if available)
-    3) default http://localhost:8000
-    """
     env_url = os.getenv("CHURN_API_URL") or os.getenv("API_URL")
     if env_url:
         return env_url.strip()
 
     try:
-        url = st.secrets.get("API_URL", None)  # may throw if no secrets.toml exists
+        url = st.secrets.get("API_URL", None)
         if url:
             return str(url).strip()
     except Exception:
@@ -93,7 +95,7 @@ st.set_page_config(
 )
 
 # ---------------------------
-# Styling (Modern SaaS CSS)
+# Styling
 # ---------------------------
 
 st.markdown(
@@ -176,7 +178,6 @@ small { opacity: 0.85; }
 }
 hr { display: none; }
 
-/* Make Streamlit bordered containers match cards (keeps headings inside) */
 div[data-testid="stVerticalBlockBorderWrapper"] {
   border: 1px solid rgba(148,163,184,0.40) !important;
   background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(59,130,246,0.10)) !important;
@@ -205,11 +206,28 @@ def api_health(api_url: str) -> Tuple[bool, str]:
         return False, str(e)
 
 
+@st.cache_resource(show_spinner=False)
+def load_local_model():
+    if joblib is None:
+        return None
+    if not PATH_MODEL.exists():
+        return None
+    try:
+        return joblib.load(PATH_MODEL)
+    except Exception:
+        return None
+
+
+def local_model_available() -> bool:
+    model = load_local_model()
+    return model is not None
+
+
 def read_json_if_exists(path: Path) -> Dict[str, Any]:
     if path.exists():
         try:
             return json.loads(path.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001
+        except Exception:
             return {}
     return {}
 
@@ -219,7 +237,7 @@ def read_csv_if_exists(path: Path) -> pd.DataFrame:
     if path.exists():
         try:
             return pd.read_csv(path)
-        except Exception:  # noqa: BLE001
+        except Exception:
             return pd.DataFrame()
     return pd.DataFrame()
 
@@ -244,10 +262,6 @@ def expected_value_per_target(
     save_rate: float,
     offer_cost: float,
 ) -> float:
-    """
-    Per-customer EV:
-    EV = P(churn) * save_rate * (margin * months_saved * monthly_charges) - offer_cost
-    """
     retained_profit = margin * months_saved * monthly_charges
     return (p_churn * save_rate * retained_profit) - offer_cost
 
@@ -281,8 +295,54 @@ def set_state_from_preset(preset: Dict[str, Any]) -> None:
         st.session_state[k] = v
 
 
+def predict_with_local_model(payload: Dict[str, Any]) -> float:
+    model = load_local_model()
+    if model is None:
+        raise RuntimeError("Local model is unavailable.")
+    df = pd.DataFrame([payload])
+    return float(model.predict_proba(df)[:, 1][0])
+
+
+def predict_one(payload: Dict[str, Any], api_url: str, prefer_api: bool = True) -> Tuple[float, str]:
+    api_ok, _ = api_health(api_url)
+
+    if prefer_api and api_ok:
+        try:
+            r = requests.post(f"{api_url}/predict", json=payload, timeout=12)
+            r.raise_for_status()
+            p = float(r.json()["churn_probability"])
+            return p, "FastAPI"
+        except Exception:
+            pass
+
+    p = predict_with_local_model(payload)
+    return p, "Local Model"
+
+
+def predict_batch_records(rows: List[Dict[str, Any]], api_url: str, prefer_api: bool = True) -> Tuple[List[float], str]:
+    api_ok, _ = api_health(api_url)
+
+    if prefer_api and api_ok:
+        try:
+            r = requests.post(f"{api_url}/predict_batch", json=rows, timeout=45)
+            r.raise_for_status()
+            out = r.json()
+            probs = [float(x["churn_probability"]) for x in out["results"]]
+            return probs, "FastAPI"
+        except Exception:
+            pass
+
+    model = load_local_model()
+    if model is None:
+        raise RuntimeError("Neither FastAPI nor local model is available for batch scoring.")
+
+    df = pd.DataFrame(rows)
+    probs = model.predict_proba(df)[:, 1].tolist()
+    return [float(x) for x in probs], "Local Model"
+
+
 # ---------------------------
-# Presets (smooth demos)
+# Presets
 # ---------------------------
 
 PRESETS: Dict[str, Dict[str, Any]] = {
@@ -385,12 +445,24 @@ with st.sidebar:
     API_URL = st.text_input("API URL", value=resolve_api_url())
 
     api_ok, api_msg = api_health(API_URL)
+    local_ok = local_model_available()
+
     if api_ok:
-        st.success(f"API: {api_msg}")
+        st.success(f"FastAPI: {api_msg}")
     else:
-        st.error("API: Offline")
-        st.caption(f"Reason: {api_msg}")
-        st.code("python -m churn.api", language="bash")
+        st.warning("FastAPI: Offline")
+
+    if local_ok:
+        st.success("Local Model: Available")
+    else:
+        st.error("Local Model: Missing")
+
+    if api_ok:
+        st.caption("Prediction mode: FastAPI first, local fallback enabled.")
+    elif local_ok:
+        st.caption("Prediction mode: Local model fallback active.")
+    else:
+        st.caption("No prediction backend available. Commit models/model.joblib to enable cloud predictions.")
 
     st.write("")
 
@@ -426,8 +498,6 @@ with st.sidebar:
     st.markdown("### 📦 Data Availability")
     if telco_scored.empty:
         st.warning("No `telco_scored.csv` found.")
-        st.caption("Generate it with:")
-        st.code("python -m churn.tableau_export", language="bash")
     else:
         st.success("Analytics dataset loaded ✅")
 
@@ -595,24 +665,21 @@ with tab_predict:
             submitted = st.form_submit_button("🚀 Predict Churn Probability", use_container_width=True)
 
     if submitted:
-        if not api_ok:
-            st.error("API is offline. Start it first: `python -m churn.api`")
-        else:
-            payload = make_payload_from_state()
-            with st.spinner("Scoring customer..."):
-                try:
-                    r = requests.post(f"{API_URL}/predict", json=payload, timeout=12)
-                    r.raise_for_status()
-                    p = float(r.json()["churn_probability"])
-                    st.session_state["last_prediction"] = p
-                    st.success("Prediction complete.")
-                except Exception as e:  # noqa: BLE001
-                    st.error(f"Prediction failed: {e}")
+        payload = make_payload_from_state()
+        with st.spinner("Scoring customer..."):
+            try:
+                p, source = predict_one(payload, API_URL, prefer_api=True)
+                st.session_state["last_prediction"] = p
+                st.session_state["last_prediction_source"] = source
+                st.success(f"Prediction complete via {source}.")
+            except Exception as e:
+                st.error(f"Prediction failed: {e}")
 
     with right:
         st.markdown("### Decision Panel")
 
         p = float(st.session_state.get("last_prediction", -1.0))
+        source = st.session_state.get("last_prediction_source", "—")
         if p < 0:
             st.info("Run a prediction to see the decision + expected value.")
         else:
@@ -635,7 +702,7 @@ with tab_predict:
   <div class="metric-card-title">Churn Probability</div>
   <div class="metric-card-value">{p:.2%}</div>
   <div class="mini-bar"><div style="width:{bar_w}%;"></div></div>
-  <div class="metric-card-sub">Model score for this customer</div>
+  <div class="metric-card-sub">Source: {source}</div>
 </div>
 """,
                 unsafe_allow_html=True,
@@ -707,7 +774,6 @@ with tab_analytics:
             df["decision"] = (df["churn_probability"] >= float(threshold)).map({True: "Intervene", False: "No Action"})
             df["risk_bucket"] = df["churn_probability"].map(risk_bucket)
 
-            # KPI row
             a1, a2, a3, a4 = st.columns(4, gap="large")
             with a1:
                 st.markdown(
@@ -758,10 +824,8 @@ with tab_analytics:
 
             c_left, c_right = st.columns([1.25, 0.75], gap="large")
 
-            # Chart 1: stacked bar distribution (like your screenshot)
             with c_left:
                 st.markdown("#### Churn Probability Distribution (stacked by decision)")
-
                 bins = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
                 df["prob_bin"] = pd.cut(df["churn_probability"], bins=bins, include_lowest=True)
 
@@ -788,9 +852,6 @@ with tab_analytics:
                     pivot = bin_df.pivot(index="prob_bin", columns="decision", values="customers").fillna(0)
                     st.bar_chart(pivot)
 
-                st.caption("Business view: how many customers get targeted at the current threshold.")
-
-            # Chart 2: contract insight
             with c_right:
                 st.markdown("#### Avg Churn Probability by Contract")
                 if "Contract" in df.columns:
@@ -816,25 +877,16 @@ with tab_analytics:
                     else:
                         st.dataframe(contract_df, use_container_width=True, hide_index=True)
 
-                    st.caption("Story: month-to-month contracts typically carry higher churn risk.")
-                else:
-                    st.info("`Contract` column not found (still okay).")
-
             st.write("")
 
-            # NEW: two extra charts (you asked for BOTH)
             x1, x2 = st.columns([1.0, 1.0], gap="large")
 
-            # Chart 3: Feature importance (Top Drivers)
             with x1:
                 st.markdown("#### Top Churn Drivers (Feature Importance)")
                 if feat_df.empty or "feature" not in feat_df.columns:
-                    st.info("feature_importance.csv not found. Run: `python -m churn.tableau_export`")
+                    st.info("feature_importance.csv not found.")
                 else:
-                    top = feat_df.sort_values("importance_mean", ascending=False).head(15).copy()
-                    # reverse for nicer horizontal bars (largest at top)
-                    top = top.iloc[::-1]
-
+                    top = feat_df.sort_values("importance_mean", ascending=False).head(15).copy().iloc[::-1]
                     if alt is not None:
                         fi_chart = (
                             alt.Chart(top)
@@ -850,16 +902,12 @@ with tab_analytics:
                     else:
                         st.dataframe(top, use_container_width=True, hide_index=True)
 
-                    st.caption("Great for presentation: explains which factors influence churn risk most.")
-
-            # Chart 4: Precision/Recall vs Threshold
             with x2:
                 st.markdown("#### Precision vs Recall vs Threshold")
                 if thr_df.empty or not {"threshold", "precision", "recall"}.issubset(set(thr_df.columns)):
-                    st.info("threshold_scan.csv not found. Run: `python -m churn.evaluate`")
+                    st.info("threshold_scan.csv not found.")
                 else:
                     tdf = thr_df.copy()
-                    # Make sure numeric
                     for col in ["threshold", "precision", "recall", "predicted_churn_rate"]:
                         if col in tdf.columns:
                             tdf[col] = pd.to_numeric(tdf[col], errors="coerce")
@@ -883,28 +931,20 @@ with tab_analytics:
                             )
                             .properties(height=300)
                         )
-
-                        # Vertical rule for current UI threshold
                         rule = (
                             alt.Chart(pd.DataFrame({"threshold": [float(threshold)]}))
                             .mark_rule()
                             .encode(x="threshold:Q")
                         )
-
                         st.altair_chart(base + rule, use_container_width=True)
                     else:
                         st.dataframe(tdf, use_container_width=True, hide_index=True)
 
-                    st.caption("This proves you didn’t pick threshold=0.5 blindly — it’s a tradeoff.")
-
             st.write("")
-
-            # Table preview (like screenshot)
             st.markdown("#### Top High-Risk Customers (Preview)")
             show_cols = [c for c in ["Contract", "PaymentMethod", "tenure", "MonthlyCharges", "TotalCharges", "churn_probability", "risk_bucket", "decision"] if c in df.columns]
             top_df = df.sort_values("churn_probability", ascending=False).head(25)[show_cols].copy()
             st.dataframe(top_df, use_container_width=True, hide_index=True)
-            st.caption("Use this table during your demo: it shows exactly who gets targeted and why.")
 
 
 # ============================================================
@@ -913,7 +953,7 @@ with tab_analytics:
 
 with tab_explain:
     st.markdown("### 🔎 Explainability")
-    st.caption("Use these visuals in your presentation to explain *why* the model behaves the way it does.")
+    st.caption("Use these visuals in your presentation to explain why the model behaves the way it does.")
 
     e1, e2 = st.columns(2, gap="large")
 
@@ -934,13 +974,11 @@ with tab_explain:
                 )
                 st.altair_chart(pi_chart, use_container_width=True)
             else:
-                st.dataframe(top_pi.iloc[::-1], use_container_width=True, hide_index=True)
-            pass
+                st.dataframe(top_pi, use_container_width=True, hide_index=True)
         elif PATH_PERM_IMPORTANCE_PNG.exists():
             st.image(str(PATH_PERM_IMPORTANCE_PNG), use_container_width=True)
-            pass
         else:
-            st.warning("No feature importance export found. Run: `python -m churn.tableau_export`")
+            st.warning("No feature importance artifact found.")
 
     with e2:
         st.markdown("#### SHAP Global Importance")
@@ -960,16 +998,13 @@ with tab_explain:
                 )
                 st.altair_chart(sg_chart, use_container_width=True)
             else:
-                st.dataframe(top_sg.iloc[::-1], use_container_width=True, hide_index=True)
-            pass
+                st.dataframe(top_sg, use_container_width=True, hide_index=True)
         elif PATH_SHAP_GLOBAL_PNG.exists():
             st.image(str(PATH_SHAP_GLOBAL_PNG), use_container_width=True)
-            pass
         else:
-            st.info("Missing SHAP artifacts. Run: `python -m churn.explain`")
+            st.info("Missing SHAP artifacts.")
 
     st.write("")
-
     st.markdown("#### SHAP Local Example (Waterfall)")
     shap_local_df = read_csv_if_exists(PATH_SHAP_LOCAL_CSV)
     if not shap_local_df.empty and {"feature", "shap_value"}.issubset(set(shap_local_df.columns)):
@@ -991,24 +1026,18 @@ with tab_explain:
                 .encode(
                     x=alt.X("shap_value:Q", title="SHAP value (signed)"),
                     y=alt.Y("feature:N", sort=None, title="Feature"),
-                    color=alt.Color("direction:N", title="Effect", scale=alt.Scale(domain=["Decreases churn risk", "Increases churn risk"])),
-                    tooltip=[
-                        "feature:N",
-                        alt.Tooltip("shap_value:Q", format=".4f"),
-                        alt.Tooltip("feature_value:Q", format=".4f") if "feature_value" in local_top.columns else alt.Tooltip("direction:N"),
-                    ],
+                    color=alt.Color("direction:N", title="Effect"),
+                    tooltip=["feature:N", alt.Tooltip("shap_value:Q", format=".4f")],
                 )
                 .properties(height=360)
             )
             st.altair_chart(sl_chart, use_container_width=True)
         else:
-            st.dataframe(local_top.iloc[::-1], use_container_width=True, hide_index=True)
-        pass
+            st.dataframe(local_top, use_container_width=True, hide_index=True)
     elif PATH_SHAP_LOCAL_PNG.exists():
         st.image(str(PATH_SHAP_LOCAL_PNG), use_container_width=True)
-        pass
     else:
-        st.info("Missing local SHAP artifacts. Run: `python -m churn.explain`")
+        st.info("Missing local SHAP artifacts.")
 
 
 # ============================================================
@@ -1048,13 +1077,10 @@ with tab_business:
                 st.altair_chart(base + rule, use_container_width=True)
             else:
                 st.line_chart(roi_plot.set_index("threshold")["total_expected_value"])
-
-            pass
         elif PATH_BUSINESS_PNG.exists():
             st.image(str(PATH_BUSINESS_PNG), use_container_width=True)
-            pass
         else:
-            st.warning("ROI export not found. Run: `python -m churn.tableau_export`")
+            st.warning("ROI export not found.")
 
     with b2:
         st.markdown("#### Quick ROI Table")
@@ -1062,7 +1088,7 @@ with tab_business:
             roi_show = roi_df.sort_values("total_expected_value", ascending=False).head(10).copy()
             st.dataframe(roi_show, use_container_width=True, hide_index=True)
         else:
-            st.info("ROI table not found. Run: `python -m churn.tableau_export`")
+            st.info("ROI table not found.")
 
         st.write("")
         st.markdown("#### Download ROI Export")
@@ -1082,7 +1108,7 @@ with tab_business:
 
 with tab_logs:
     st.markdown("### 🧾 Logs + Batch Scoring")
-    st.caption("API logs predictions. You can also score a CSV in bulk.")
+    st.caption("Batch scoring works via FastAPI when available, otherwise falls back to the local model.")
 
     l1, l2 = st.columns([1.25, 0.75], gap="large")
 
@@ -1090,7 +1116,7 @@ with tab_logs:
         st.markdown("#### Recent Predictions Log")
         logs_df = read_csv_if_exists(PATH_LOGS)
         if logs_df.empty:
-            st.info("No logs found yet. Make predictions in the Predict tab (API logs them).")
+            st.info("No logs found yet. Local-model fallback predictions are not persisted in Streamlit Cloud.")
         else:
             show_n = st.slider("Show last N rows", 10, 500, 50, 10)
             st.dataframe(logs_df.tail(show_n), use_container_width=True, hide_index=True)
@@ -1114,28 +1140,22 @@ with tab_logs:
                 st.write("Preview:")
                 st.dataframe(df_in.head(10), use_container_width=True)
 
-                if st.button("Score File via API", use_container_width=True):
-                    if not api_ok:
-                        st.error("API offline. Start: `python -m churn.api`")
-                    else:
-                        rows: List[Dict[str, Any]] = df_in.to_dict(orient="records")
-                        with st.spinner("Scoring batch..."):
-                            r = requests.post(f"{API_URL}/predict_batch", json=rows, timeout=45)
-                            r.raise_for_status()
-                            out = r.json()
-                            probs = [float(x["churn_probability"]) for x in out["results"]]
-                            df_out = df_in.copy()
-                            df_out["churn_probability"] = probs
-                            df_out["risk_bucket"] = df_out["churn_probability"].map(risk_bucket)
-                            st.success(f"Scored {len(df_out)} rows.")
-                            st.dataframe(df_out.head(20), use_container_width=True)
+                if st.button("Score File", use_container_width=True):
+                    rows: List[Dict[str, Any]] = df_in.to_dict(orient="records")
+                    with st.spinner("Scoring batch..."):
+                        probs, source = predict_batch_records(rows, API_URL, prefer_api=True)
+                        df_out = df_in.copy()
+                        df_out["churn_probability"] = probs
+                        df_out["risk_bucket"] = df_out["churn_probability"].map(risk_bucket)
+                        st.success(f"Scored {len(df_out)} rows via {source}.")
+                        st.dataframe(df_out.head(20), use_container_width=True)
 
-                            st.download_button(
-                                "⬇️ Download scored CSV",
-                                data=df_out.to_csv(index=False).encode("utf-8"),
-                                file_name="scored_customers.csv",
-                                mime="text/csv",
-                                use_container_width=True,
-                            )
-            except Exception as e:  # noqa: BLE001
+                        st.download_button(
+                            "⬇️ Download scored CSV",
+                            data=df_out.to_csv(index=False).encode("utf-8"),
+                            file_name="scored_customers.csv",
+                            mime="text/csv",
+                            use_container_width=True,
+                        )
+            except Exception as e:
                 st.error(f"Could not read/score CSV: {e}")
