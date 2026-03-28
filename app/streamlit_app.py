@@ -209,25 +209,30 @@ def api_health(api_url: str) -> Tuple[bool, str]:
 @st.cache_resource(show_spinner=False)
 def load_local_model():
     if joblib is None:
-        return None
+        raise RuntimeError("joblib is not installed in this environment.")
+
     if not PATH_MODEL.exists():
-        return None
+        raise FileNotFoundError(f"Model file not found at: {PATH_MODEL}")
+
     try:
         return joblib.load(PATH_MODEL)
-    except Exception:
-        return None
+    except Exception as e:  # noqa: BLE001
+        raise RuntimeError(f"Model file exists but failed to load: {e}") from e
 
 
-def local_model_available() -> bool:
-    model = load_local_model()
-    return model is not None
+def get_local_model_status() -> tuple[bool, str]:
+    try:
+        _ = load_local_model()
+        return True, "Available"
+    except Exception as e:  # noqa: BLE001
+        return False, str(e)
 
 
 def read_json_if_exists(path: Path) -> Dict[str, Any]:
     if path.exists():
         try:
             return json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
+        except Exception:  # noqa: BLE001
             return {}
     return {}
 
@@ -237,7 +242,7 @@ def read_csv_if_exists(path: Path) -> pd.DataFrame:
     if path.exists():
         try:
             return pd.read_csv(path)
-        except Exception:
+        except Exception:  # noqa: BLE001
             return pd.DataFrame()
     return pd.DataFrame()
 
@@ -297,8 +302,6 @@ def set_state_from_preset(preset: Dict[str, Any]) -> None:
 
 def predict_with_local_model(payload: Dict[str, Any]) -> float:
     model = load_local_model()
-    if model is None:
-        raise RuntimeError("Local model is unavailable.")
     df = pd.DataFrame([payload])
     return float(model.predict_proba(df)[:, 1][0])
 
@@ -333,9 +336,6 @@ def predict_batch_records(rows: List[Dict[str, Any]], api_url: str, prefer_api: 
             pass
 
     model = load_local_model()
-    if model is None:
-        raise RuntimeError("Neither FastAPI nor local model is available for batch scoring.")
-
     df = pd.DataFrame(rows)
     probs = model.predict_proba(df)[:, 1].tolist()
     return [float(x) for x in probs], "Local Model"
@@ -445,7 +445,7 @@ with st.sidebar:
     API_URL = st.text_input("API URL", value=resolve_api_url())
 
     api_ok, api_msg = api_health(API_URL)
-    local_ok = local_model_available()
+    local_ok, local_msg = get_local_model_status()
 
     if api_ok:
         st.success(f"FastAPI: {api_msg}")
@@ -455,14 +455,15 @@ with st.sidebar:
     if local_ok:
         st.success("Local Model: Available")
     else:
-        st.error("Local Model: Missing")
+        st.error("Local Model: Unavailable")
+        st.caption(local_msg)
 
     if api_ok:
         st.caption("Prediction mode: FastAPI first, local fallback enabled.")
     elif local_ok:
         st.caption("Prediction mode: Local model fallback active.")
     else:
-        st.caption("No prediction backend available. Commit models/model.joblib to enable cloud predictions.")
+        st.caption("No prediction backend available.")
 
     st.write("")
 
@@ -672,7 +673,7 @@ with tab_predict:
                 st.session_state["last_prediction"] = p
                 st.session_state["last_prediction_source"] = source
                 st.success(f"Prediction complete via {source}.")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 st.error(f"Prediction failed: {e}")
 
     with right:
@@ -927,7 +928,11 @@ with tab_analytics:
                                 x=alt.X("threshold:Q", title="Threshold"),
                                 y=alt.Y("value:Q", title="Score", scale=alt.Scale(domain=[0, 1])),
                                 color=alt.Color("metric:N", title="Metric"),
-                                tooltip=[alt.Tooltip("threshold:Q", format=".2f"), "metric:N", alt.Tooltip("value:Q", format=".3f")],
+                                tooltip=[
+                                    alt.Tooltip("threshold:Q", format=".2f"),
+                                    "metric:N",
+                                    alt.Tooltip("value:Q", format=".3f"),
+                                ],
                             )
                             .properties(height=300)
                         )
@@ -942,7 +947,18 @@ with tab_analytics:
 
             st.write("")
             st.markdown("#### Top High-Risk Customers (Preview)")
-            show_cols = [c for c in ["Contract", "PaymentMethod", "tenure", "MonthlyCharges", "TotalCharges", "churn_probability", "risk_bucket", "decision"] if c in df.columns]
+            show_cols = [
+                c for c in [
+                    "Contract",
+                    "PaymentMethod",
+                    "tenure",
+                    "MonthlyCharges",
+                    "TotalCharges",
+                    "churn_probability",
+                    "risk_bucket",
+                    "decision",
+                ] if c in df.columns
+            ]
             top_df = df.sort_values("churn_probability", ascending=False).head(25)[show_cols].copy()
             st.dataframe(top_df, use_container_width=True, hide_index=True)
 
@@ -1015,9 +1031,9 @@ with tab_explain:
             local_top["abs_shap_value"] = pd.to_numeric(local_top["shap_value"], errors="coerce").abs()
             local_top = local_top.sort_values("abs_shap_value", ascending=False)
         local_top = local_top.head(15).copy().iloc[::-1]
-        local_top["direction"] = (pd.to_numeric(local_top["shap_value"], errors="coerce") >= 0).map(
-            {True: "Increases churn risk", False: "Decreases churn risk"}
-        )
+        local_top["direction"] = (
+            pd.to_numeric(local_top["shap_value"], errors="coerce") >= 0
+        ).map({True: "Increases churn risk", False: "Decreases churn risk"})
 
         if alt is not None:
             sl_chart = (
@@ -1065,7 +1081,10 @@ with tab_business:
                     .encode(
                         x=alt.X("threshold:Q", title="Threshold"),
                         y=alt.Y("total_expected_value:Q", title="Total expected value ($)"),
-                        tooltip=[alt.Tooltip("threshold:Q", format=".2f"), alt.Tooltip("total_expected_value:Q", format=",.0f")],
+                        tooltip=[
+                            alt.Tooltip("threshold:Q", format=".2f"),
+                            alt.Tooltip("total_expected_value:Q", format=",.0f"),
+                        ],
                     )
                     .properties(height=340)
                 )
@@ -1157,5 +1176,5 @@ with tab_logs:
                             mime="text/csv",
                             use_container_width=True,
                         )
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 st.error(f"Could not read/score CSV: {e}")
